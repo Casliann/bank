@@ -3,6 +3,10 @@
 
 #include "customer.h"
 
+#ifndef VERSION
+#define VERSION "1.0.0"
+#endif 
+
 int login(User *user);
 int create_account(User *user);
 int delete_account(User *user);

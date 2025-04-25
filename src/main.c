@@ -6,7 +6,7 @@
 #include "../include/account.h"
 
 void print_help() {
-    printf("\n*** WELCOME TO THE BANK ***");
+    printf("\n*** WELCOME TO THE BANK v%s ***", VERSION);
     printf("\nSelect an option: ");
     printf("\n 1.   Create an account");
     printf("\n 2.   Delete account");
@@ -14,6 +14,7 @@ void print_help() {
     printf("\n 4.   Withdraw money");
     printf("\n 5.   Report");
     printf("\n 6.   Exit");
+    
 }
 
 int get_valid_choice() {
