@@ -13,7 +13,7 @@ A banking application built with **CMake** to manage accounts and perform basic 
 - **Transactions**: 
   - Deposit money
   - Withdraw money
-- **Reporting**: View the number of total amounts in the system.
+- **Reporting**: View the number of total accounts in the system.
 
 ### User Interface
 At runtime, the application shows the following interactive menu:
