@@ -38,7 +38,7 @@ int parse_customer_line(char *line, char *name, char *ssn, int *account, double 
 
 int read_customer_data(User *user, const char *name, const char *ssn) {
     char line[256];
-    char file_name[200], file_ssn[9];
+    char file_name[200], file_ssn[20];
     int file_account;
     double file_balance;
 
@@ -47,39 +47,25 @@ int read_customer_data(User *user, const char *name, const char *ssn) {
         perror("Could not open customers file");
         return 0;
     }
+
     while (fgets(line, sizeof(line), file)) {
-      
         if (!parse_customer_line(line, file_name, file_ssn, &file_account, &file_balance)) {
-            continue;  
+            continue;
         }
 
-            if (strcmp(file_name, name) == 0 && strcmp(file_ssn, ssn) == 0) {
-                strcpy(user->name, file_name);
-                strcpy(user->SSN, file_ssn);
+        if (strcmp(file_name, name) == 0 && strcmp(file_ssn, ssn) == 0) {
+            strcpy(user->name, file_name);
+            strcpy(user->SSN, file_ssn);
+            user->account = (Accounttype)file_account;
+            user->balance = file_balance;
 
-                switch (file_account) {
-                    case 0:
-                        user->account = STANDARD;
-                        break;
-                    case 1:
-                        user->account = INITIAL_BALANCE;
-                        break;
-                    case 2:
-                        user->account = OVERDRAFT_LIMIT;
-                        break;
-                    default:
-                        user->account = STANDARD; 
-                        break;
-                }
-
-                user->balance = file_balance;
-
-                fclose(file);
-                return 1; 
-            }
+            fclose(file);
+            return 1;
+        }
     }
+
     fclose(file);
-    return 0; 
+    return 0;
 }
 
 int update_balance_in_csv(User *user, double new_amount) {
@@ -138,8 +124,80 @@ int count_total_accounts() {
     return count;
 }
 
+double total_money_in_bank() {
+    char line[256];
+    char file_name[200], file_ssn[20];
+    int file_account;
+    double file_balance;
+    double total_balance = 0.0;
+
+    FILE *file = fopen("../customers.csv", "r");
+    if (!file) {
+        perror("Could not open customers file");
+        return 0;
+    }
+
+    while (fgets(line, sizeof(line), file)) {
+        if (!parse_customer_line(line, file_name, file_ssn, &file_account, &file_balance)) {
+            
+            continue;
+        }
+        total_balance += file_balance;
+    }
+
+    fclose(file);
+    return total_balance;
+}
+
+void write_last_10_transactions() {
+    FILE *file = fopen("../log.csv", "r");
+    if (!file) {
+        perror("Could not open log file");
+        return;
+    }
+
+    fseek(file, 0, SEEK_END);
+    long position = ftell(file);   // Get the current position of the file pointer (this is the size of the file in bytes)
+    int line_count = 0;
+
+    while(position > 0 && line_count <= 10) {
+        fseek(file, --position, SEEK_SET);  // Decrement the position by 1 byte and move the file pointer to the new position
+        char ch = fgetc(file);
+
+        if (ch == '\n') {
+            line_count++;  
+        }
+    }
+}
+
+void print_last_10_transaction() {
+    FILE *file = fopen("../log.csv", "r");
+    if (!file) {
+        perror("Could not open file");
+        return;
+    }
+
+    char line[256];
+    int line_count = 0;
+
+    while (fgets(line, sizeof(line), file) && line_count < 10) {
+        printf("%s", line);
+        line_count++;
+    }
+
+    fclose(file);
+}
+
 void report(User *user) {
-    printf("=== Customer Report ===\n");
+    
+    printf("\n===== CUSTOMER REPORT (^‿^) =====\n");
+    
     int total = count_total_accounts();
     printf("Total accounts in system: %d\n", total);
+
+    double total_balance = total_money_in_bank();
+    printf("\nTotal money held in bank: %.2lf$\n", total_balance);
+
+    printf("\n~~~ Last 10 transactions ~~~\n");
+    print_last_10_transaction();
 }

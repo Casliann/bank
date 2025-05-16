@@ -35,14 +35,26 @@ int choose_accounttype(User *user) {
 }
 
 int create_account(User *user) {
-    printf("Please enter your name: ");
-    scanf("%s", user->name);
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
 
+    printf("Please enter your name: ");
+    fgets(user->name, sizeof(user->name), stdin);
+
+    size_t length = strlen(user->name);
+    if (length > 0 && user->name[length - 1] == '\n') {
+        user->name[length - 1] = '\0';
+    }
     generate_ssn(user);
     choose_accounttype(user);
 
     if (user->account == INITIAL_BALANCE) {
-        user->balance = 100.000;
+        printf("What is the initial balance you want to put on your account?: ");
+        scanf("%lf", &user->balance);
+        if (user->balance > 100000) {
+            printf("Where did you get all that money? Very sus! Go somewhere else!\n");
+            return 1;
+        }
     }
 
     save_account_to_csv(user, "../customers.csv");
@@ -55,7 +67,16 @@ int login(User *user) {
     char ssn[9];
     printf("Please login to your account.\n");
     printf("Enter accountname: ");
-    scanf("%s", name);
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF);
+
+    fgets(name, sizeof(name), stdin);
+
+    size_t length = strlen(name);
+    if (length > 0 && name[length - 1] == '\n') {
+        name[length - 1] = '\0';
+    }
+
     printf("Enter SSN: ");
     scanf("%s", ssn);
 
@@ -67,7 +88,6 @@ int login(User *user) {
     }
     return 1;
 }
-
 
 int delete_account(User *user) {
     FILE *input = fopen("../customers.csv", "r");
